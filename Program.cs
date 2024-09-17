@@ -14,19 +14,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var keyVaultUrl = new Uri(builder.Configuration.GetSection("KeyVault:KeyVaultUrl").Value!);
+var azureCredentials = new DefaultAzureCredential();
 
+builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredentials);
+
+//Prod loads Azure DB
 if (builder.Environment.IsProduction())
 {
-    var keyVaultUrl = new Uri(builder.Configuration.GetSection("KeyVault:KeyVaultUrl").Value!);
-    var azureCredentials = new DefaultAzureCredential();
-
-    builder.Configuration.AddAzureKeyVault(keyVaultUrl, azureCredentials);
-
     var connString = builder.Configuration.GetSection("ProdConn").Value;
-
     builder.Services.AddDbContext<UserContext>(opt => opt.UseSqlServer(connString));
 }
 
+//Dev loads local DB
 if (builder.Environment.IsDevelopment())
 {
     var connString = builder.Configuration.GetSection("LocalDb:ConnString").Value;

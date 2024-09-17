@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace beakiebot_server.Controllers
 {
+    [Route("[controller]")]
+    [ApiController]
     public class DbTestController : Controller
     {
         private readonly UserContext _userContext;
