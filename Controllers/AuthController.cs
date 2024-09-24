@@ -1,5 +1,6 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using beakiebot_server.Data;
 using beakiebot_server.Models;
 using beakiebot_server.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,11 @@ namespace beakiebot_server.Controllers
     [ApiController]
     public class AuthController : Controller
     {
-        private readonly HttpClient _httpClient;
         private readonly Uri _keyVaultUri;
         private readonly string _twitchClientId;
         private readonly string _twitchClientSecret;
         private readonly string _redirectUrl = "https://localhost:7176/auth/login"; //Replace with azure keyvault value for prod
+
 
         private SecretClient _secretClient;
 
@@ -23,7 +24,6 @@ namespace beakiebot_server.Controllers
         {
             _keyVaultUri = new(configuration["KeyVault:KeyVaultUrl"]!);
 
-            _httpClient = HttpClientHelper.GetClient();
             _secretClient = new(_keyVaultUri, new DefaultAzureCredential());
 
             var response = _secretClient.GetSecret("TwitchClientId");
@@ -46,7 +46,7 @@ namespace beakiebot_server.Controllers
             };
             var content = new FormUrlEncodedContent(values);
 
-            var response = await _httpClient.PostAsync("https://id.twitch.tv/oauth2/token", content);
+            var response = await HttpClientHelper.Client().PostAsync("https://id.twitch.tv/oauth2/token", content);
             var responseString = await response.Content.ReadAsStringAsync();
 
             UserAuthTokenResponse tokenResponse = JsonSerializer.Deserialize<UserAuthTokenResponse>(responseString)!;

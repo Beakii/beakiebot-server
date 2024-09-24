@@ -4,7 +4,7 @@
     {
         private static readonly HttpClient client = new();
 
-        public static HttpClient GetClient()
+        public static HttpClient Client()
         {
             return client;
         }

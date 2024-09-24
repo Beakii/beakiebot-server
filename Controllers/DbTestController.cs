@@ -5,20 +5,13 @@ namespace beakiebot_server.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class DbTestController : Controller
+    public class DbTestController(IStorage storage) : Controller
     {
-        private readonly UserContext _userContext;
-
-        public DbTestController(UserContext context)
-        {
-            _userContext = context;
-        }
 
         [HttpGet("GetUsers")]
         public IActionResult GetUsers()
         {
-            var users = _userContext.Users.ToList();
-            return Ok(users);
+            return Ok(storage.GetAllUsers());
         }
     }
 }
