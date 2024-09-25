@@ -1,6 +1,4 @@
-﻿using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using beakiebot_server.Data;
+﻿using beakiebot_server.Data;
 using beakiebot_server.Models;
 using beakiebot_server.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -12,25 +10,13 @@ namespace beakiebot_server.Controllers
     [ApiController]
     public class AuthController : Controller
     {
-        private readonly Uri _keyVaultUri;
-        private readonly string _twitchClientId;
-        private readonly string _twitchClientSecret;
-        private readonly string _redirectUrl = "https://localhost:7176/auth/login"; //Replace with azure keyvault value for prod
+        private readonly AzureKeyVaultClient _azureClient;
+        private readonly IStorage _storage;
 
-
-        private SecretClient _secretClient;
-
-        public AuthController(IConfiguration configuration)
+        public AuthController(AzureKeyVaultClient azureClient, IStorage storage)
         {
-            _keyVaultUri = new(configuration["KeyVault:KeyVaultUrl"]!);
-
-            _secretClient = new(_keyVaultUri, new DefaultAzureCredential());
-
-            var response = _secretClient.GetSecret("TwitchClientId");
-            _twitchClientId = response.Value.Value.ToString();
-
-            response = _secretClient.GetSecret("TwitchClientSecret");
-            _twitchClientSecret = response.Value.Value.ToString();
+            _azureClient = azureClient;
+            _storage = storage;
         }
 
         [HttpGet("Login")]
@@ -38,11 +24,11 @@ namespace beakiebot_server.Controllers
         {
             var values = new Dictionary<string, string>
             {
-                { "client_id", _twitchClientId },
-                { "client_secret", _twitchClientSecret },
+                { "client_id", _azureClient.TwitchClientId! },
+                { "client_secret", _azureClient.TwitchClientSecret! },
                 { "code", code },
                 { "grant_type", "authorization_code" },
-                { "redirect_uri", _redirectUrl }
+                { "redirect_uri", _azureClient.RedirectUrl }
             };
             var content = new FormUrlEncodedContent(values);
 

@@ -1,5 +1,6 @@
 using Azure.Identity;
 using beakiebot_server.Data;
+using beakiebot_server.Models;
 using Microsoft.EntityFrameworkCore;
 
 /////////////////////////////////////////////////////////////////
@@ -25,6 +26,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddDbContext<UserContext>(opt => opt.UseSqlServer(builder.Configuration.GetSection("LocalDb:ConnString").Value));
 }
 
+builder.Services.AddTransient<AzureKeyVaultClient>();
 builder.Services.AddTransient<IStorage, Storage>();
 #endregion
 // End of Services /////////////////////////////////////////////
