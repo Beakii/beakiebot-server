@@ -9,10 +9,5 @@
         public string? RefreshToken { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastUpdatedAt { get; set; }
-
-        public User(string username, string token, string refreshToken)
-        {
-            
-        }
     }
 }

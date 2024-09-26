@@ -1,13 +1,13 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 
-namespace beakiebot_server.Models
+namespace beakiebot_server.Clients
 {
     public class AzureKeyVaultClient
     {
         private readonly SecretClient _secretClient;
 
-        private Uri KeyVaultUri {  get; set; }
+        private Uri KeyVaultUri { get; set; }
         public string? TwitchClientId { get; set; }
         public string? TwitchClientSecret { get; set; }
         public string RedirectUrl { get; set; } = "https://localhost:7176/auth/login"; //Replace with azure keyvault value for prod

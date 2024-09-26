@@ -1,8 +1,6 @@
-﻿using beakiebot_server.Data;
-using beakiebot_server.Models;
-using beakiebot_server.Utils;
+﻿using beakiebot_server.Clients;
+using beakiebot_server.Data;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace beakiebot_server.Controllers
 {
@@ -20,24 +18,11 @@ namespace beakiebot_server.Controllers
         }
 
         [HttpGet("Login")]
-        public async Task<IActionResult> Login(string code)
+        public IActionResult Login(string code)
         {
-            var values = new Dictionary<string, string>
-            {
-                { "client_id", _azureClient.TwitchClientId! },
-                { "client_secret", _azureClient.TwitchClientSecret! },
-                { "code", code },
-                { "grant_type", "authorization_code" },
-                { "redirect_uri", _azureClient.RedirectUrl }
-            };
-            var content = new FormUrlEncodedContent(values);
-
-            var response = await HttpClientHelper.Client().PostAsync("https://id.twitch.tv/oauth2/token", content);
-            var responseString = await response.Content.ReadAsStringAsync();
-
-            UserAuthTokenResponse tokenResponse = JsonSerializer.Deserialize<UserAuthTokenResponse>(responseString)!;
-            
-            return Ok(tokenResponse);
+            var twitchLoginClient = new TwitchUserClient(code, _azureClient, _storage);
+            twitchLoginClient.UserInit();
+            return Ok();
         }
     }
 }

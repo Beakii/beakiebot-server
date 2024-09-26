@@ -1,6 +1,6 @@
 using Azure.Identity;
+using beakiebot_server.Clients;
 using beakiebot_server.Data;
-using beakiebot_server.Models;
 using Microsoft.EntityFrameworkCore;
 
 /////////////////////////////////////////////////////////////////

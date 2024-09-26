@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace beakiebot_server.Models
+namespace beakiebot_server.Models.TwitchResponse
 {
     public class UserAuthTokenResponse
     {
