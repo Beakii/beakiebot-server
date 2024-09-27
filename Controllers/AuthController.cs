@@ -10,18 +10,19 @@ namespace beakiebot_server.Controllers
     {
         private readonly AzureKeyVaultClient _azureClient;
         private readonly IStorage _storage;
+        private readonly TwitchUserClient _twitchClient;
 
-        public AuthController(AzureKeyVaultClient azureClient, IStorage storage)
+        public AuthController(AzureKeyVaultClient azureClient, IStorage storage, TwitchUserClient twitchClient)
         {
             _azureClient = azureClient;
             _storage = storage;
+            _twitchClient = twitchClient;
         }
 
         [HttpGet("Login")]
-        public IActionResult Login(string code)
+        public async Task<IActionResult> Login(string code)
         {
-            var twitchLoginClient = new TwitchUserClient(code, _azureClient, _storage);
-            twitchLoginClient.UserInit();
+            await _twitchClient.UserInit(code);
             return Ok();
         }
     }

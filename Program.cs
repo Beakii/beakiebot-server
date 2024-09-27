@@ -27,6 +27,7 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddTransient<AzureKeyVaultClient>();
+builder.Services.AddTransient<TwitchUserClient>();
 builder.Services.AddTransient<IStorage, Storage>();
 #endregion
 // End of Services /////////////////////////////////////////////

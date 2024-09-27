@@ -1,4 +1,5 @@
 ﻿using beakiebot_server.Data;
+using beakiebot_server.Models;
 using beakiebot_server.Models.TwitchResponse;
 using beakiebot_server.Utils;
 using System.Text.Json;
@@ -7,54 +8,63 @@ namespace beakiebot_server.Clients
 {
     public class TwitchUserClient
     {
-        private readonly string _code;
         private readonly AzureKeyVaultClient _azureClient;
         private readonly IStorage _storage;
 
-        public TwitchUserClient(string code, AzureKeyVaultClient azureKeyVaultClient, IStorage storage)
+        public TwitchUserClient(AzureKeyVaultClient azureKeyVaultClient, IStorage storage)
         {
             _storage = storage;
             _azureClient = azureKeyVaultClient;
-            _code = code;
-        }
+        }        
         
-        public async void UserInit()
+        public async Task UserInit(string code)
         {
-            var tokenResponse = await TwitchGetToken();
+            var tokenResponse = await TwitchGetToken(code);
             var getUserResponse = await TwitchGetUser(tokenResponse);
 
-            var userExists = CheckUserExists(getUserResponse.Data[0].DisplayName);
+            var userExists = await CheckUserExists(getUserResponse.Data[0].Login);
 
             if (!userExists)
             {
-                CreateNewUser();
+                CreateNewUser(tokenResponse, getUserResponse.Data[0]);
             }
-            
+            else
+            {
+                Console.WriteLine("No need to create, user exists!");
+            }
         }
 
-        public async void CreateNewUser()
+        private void CreateNewUser(UserAuthTokenResponse tokenResponse, GetUserResponseData getUserResponse)
         {
-            //TODO
-            //Create new user object
-            //Add to DB
+            var user = new User()
+            {
+                Login = getUserResponse.Login,
+                DisplayName = getUserResponse.DisplayName,
+                ProfileImageUrl = getUserResponse.ProfileImageUrl,
+                Email = getUserResponse.Email,
+                AuthToken = tokenResponse.AccessToken,
+                RefreshToken = tokenResponse.RefreshToken,
+                ExpiresIn = tokenResponse.ExpiresIn,
+                CreatedAt = DateTime.UtcNow,
+                LastUpdatedAt = DateTime.UtcNow,
+            };
+
+           _storage.Add(user);
         }
 
-        public bool CheckUserExists(string displayName)
+        private async Task<bool> CheckUserExists(string login)
         {
-            //TODO
-            //Search DB for displayname
-            //If already in DB return true
-            //else return false
-            return false;
+            var user = await _storage.GetUser(login);
+            return user != null;
         }
 
-        private async Task<UserAuthTokenResponse> TwitchGetToken()
+        private async Task<UserAuthTokenResponse> TwitchGetToken(string code)
         {
             var values = new Dictionary<string, string>
             {
                 { "client_id", _azureClient.TwitchClientId! },
                 { "client_secret", _azureClient.TwitchClientSecret! },
-                { "code", _code },
+                { "code", code },
                 { "grant_type", "authorization_code" },
                 { "redirect_uri", _azureClient.RedirectUrl }
             };
@@ -68,7 +78,7 @@ namespace beakiebot_server.Clients
             return tokenResponse;
         }
 
-        public async Task<GetUserResponse> TwitchGetUser(UserAuthTokenResponse userAuthToken)
+        private async Task<GetUserResponse> TwitchGetUser(UserAuthTokenResponse userAuthToken)
         {
             HttpClientHelper.Client().DefaultRequestHeaders.Add("Authorization", "Bearer " + userAuthToken.AccessToken);
             HttpClientHelper.Client().DefaultRequestHeaders.Add("Client-Id", _azureClient.TwitchClientId);
